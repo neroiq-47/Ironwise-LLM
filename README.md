@@ -1,5 +1,7 @@
 # Ironwise
 
+![Ironwise](brand/logo.svg)
+
 Drop your finance spreadsheets in. Ask questions like a human. Get numbers you can actually trust — and prove where they came from.
 
 **Self-hosted. Under 7 GB. Your data never leaves the box.**
@@ -55,6 +57,11 @@ Open `dashboard/index.html` in a browser (or serve the folder). Black / grey / m
 | Size gate | Whole thing stays under 7 GB |
 | Dashboard | Clean web UI for the API |
 
+## Brand
+
+See [brand/brand.md](brand/brand.md) for colours, logo usage, and voice.  
+Tagline: **Numbers you can prove.**
+
 ## Status
 
 v0.1.1 — application, tests, evals, and pipeline are ready. The fine-tuned model weights are produced by the `training/` folder (~5 GB GGUF). Any OpenAI-compatible 7–8B instruction model works in the meantime.
@@ -62,7 +69,8 @@ v0.1.1 — application, tests, evals, and pipeline are ready. The fine-tuned mod
 ## Repo map
 
 - `ironwise/` — runtime (API, agent, ingest, store, finance tools, audit)
-- `dashboard/` — single-file web UI (black/grey/mint)
+- `dashboard/` — multi-page web UI (black/grey/mint) with logo
+- `brand/` — logo, icon, colour system, voice
 - `tests/` — 129 tests
 - `evals/` — golden questions
 - `training/` — LoRA fine-tune path
