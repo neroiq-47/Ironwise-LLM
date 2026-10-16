@@ -40,6 +40,10 @@ ironwise reconcile --period 2026-09 --cash-account 1200
 
 Want the natural-language layer? Drop a compatible 7–8B model GGUF into `models/` and start the stack with `docker compose` (see `deploy/`).
 
+## Dashboard
+
+Open `dashboard/index.html` in a browser (or serve the folder). Black / grey / mint UI. Set the API base and key, then ask questions, run P&L / variance / reconcile, upload files, or verify the audit chain.
+
 ## What you get out of the box
 
 | Thing | Utility |
@@ -49,6 +53,7 @@ Want the natural-language layer? Drop a compatible 7–8B model GGUF into `model
 | P&L / variance / reconcile | Deterministic finance tools you can trust |
 | Audit log | Hash-chained record of every step |
 | Size gate | Whole thing stays under 7 GB |
+| Dashboard | Clean web UI for the API |
 
 ## Status
 
@@ -57,6 +62,7 @@ v0.1.1 — application, tests, evals, and pipeline are ready. The fine-tuned mod
 ## Repo map
 
 - `ironwise/` — runtime (API, agent, ingest, store, finance tools, audit)
+- `dashboard/` — single-file web UI (black/grey/mint)
 - `tests/` — 129 tests
 - `evals/` — golden questions
 - `training/` — LoRA fine-tune path
