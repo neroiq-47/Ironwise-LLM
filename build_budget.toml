@@ -1,0 +1,9 @@
+# Size budget for the full deployment (model + images) ≤ 7 GB
+
+[budget]
+max_total_mb = 7168
+
+[components]
+model_gguf_mb = 5200
+llm_image_mb = 150
+api_image_mb = 350
