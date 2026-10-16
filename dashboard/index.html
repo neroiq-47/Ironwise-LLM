@@ -259,6 +259,7 @@
       <div class="card">
         <h2>About</h2>
         <p class="muted">Every answer is computed from the database, not by the model. The audit log is a SHA-256 hash chain. Verify it any time.</p>
+        <p class="muted">Tip: if you open this file directly (file://), the browser may block API calls. Serve the dashboard folder or open it from the same origin as the API.</p>
       </div>
     </div>
 
@@ -311,7 +312,6 @@ function showOut(el, data) {
   el.textContent = typeof data === "string" ? data : JSON.stringify(data, null, 2);
 }
 
-// Persist history in session
 const askHist = JSON.parse(sessionStorage.getItem("askHist") || "[]");
 const ingestHist = JSON.parse(sessionStorage.getItem("ingestHist") || "[]");
 function renderAskHist() {
@@ -367,13 +367,13 @@ $("askBtn").onclick = async () => {
 function renderReport(data, kind) {
   const out = $("reportOut");
   if (kind === "pnl" && data && typeof data === "object") {
-    const rows = Object.entries(data).map(([k,v]) => `<tr><td>${k}</td><td>${typeof v === "object" ? JSON.stringify(v) : v}</td></tr>`).join("");
+    const rows = Object.entries(data).map(([k,v]) => `<tr><td>${escapeHtml(k)}</td><td>${escapeHtml(typeof v === "object" ? JSON.stringify(v) : v)}</td></tr>`).join("");
     out.innerHTML = `<table><tbody>${rows}</tbody></table>`;
   } else if (Array.isArray(data)) {
     if (!data.length) { out.innerHTML = '<p class="muted">No data</p>'; return; }
     const keys = Object.keys(data[0]);
-    const head = keys.map(k => `<th>${k}</th>`).join("");
-    const body = data.map(row => `<tr>${keys.map(k => `<td>${row[k] ?? ""}</td>`).join("")}</tr>`).join("");
+    const head = keys.map(k => `<th>${escapeHtml(k)}</th>`).join("");
+    const body = data.map(row => `<tr>${keys.map(k => `<td>${escapeHtml(row[k] ?? "")}</td>`).join("")}</tr>`).join("");
     out.innerHTML = `<table><thead><tr>${head}</tr></thead><tbody>${body}</tbody></table>`;
   } else {
     out.innerHTML = `<div class="output">${JSON.stringify(data, null, 2)}</div>`;
