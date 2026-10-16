@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Ironwise Dashboard</title>
+<title>Ironwise</title>
 <style>
   :root {
     --bg: #0a0a0a;
@@ -14,6 +14,7 @@
     --mint: #3ddc97;
     --mint-dim: #2aa87a;
     --danger: #ff6b6b;
+    --sidebar: #0f0f0f;
   }
   * { box-sizing: border-box; }
   body {
@@ -22,46 +23,73 @@
     background: var(--bg);
     color: var(--text);
     line-height: 1.5;
+    display: flex;
+    min-height: 100vh;
+  }
+  nav {
+    width: 220px;
+    background: var(--sidebar);
+    border-right: 1px solid var(--border);
+    padding: 1.5rem 1rem;
+    flex-shrink: 0;
+  }
+  nav h1 {
+    margin: 0 0 2rem;
+    font-size: 1.3rem;
+    font-weight: 600;
+    padding: 0 0.5rem;
+  }
+  nav h1 span { color: var(--mint); }
+  nav a {
+    display: block;
+    padding: 0.65rem 0.75rem;
+    margin-bottom: 0.25rem;
+    color: var(--muted);
+    text-decoration: none;
+    border-radius: 8px;
+    font-size: 0.95rem;
+  }
+  nav a:hover, nav a.active {
+    background: #1a1a1a;
+    color: var(--mint);
+  }
+  .main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
   }
   header {
-    padding: 1.25rem 2rem;
+    padding: 1rem 1.5rem;
     border-bottom: 1px solid var(--border);
     display: flex;
     align-items: center;
-    justify-content: space-between;
-  }
-  header h1 {
-    margin: 0;
-    font-size: 1.4rem;
-    font-weight: 600;
-  }
-  header h1 span { color: var(--mint); }
-  .config {
-    display: flex;
+    justify-content: flex-end;
     gap: 0.75rem;
-    align-items: center;
-    font-size: 0.85rem;
+    background: var(--bg);
   }
-  .config input {
+  header input {
     background: var(--card);
     border: 1px solid var(--border);
     color: var(--text);
     padding: 0.4rem 0.6rem;
     border-radius: 6px;
-    width: 180px;
+    width: 200px;
+    font-size: 0.85rem;
   }
-  main {
-    max-width: 1100px;
-    margin: 0 auto;
+  #content {
+    flex: 1;
     padding: 1.5rem;
-    display: grid;
-    gap: 1.25rem;
+    max-width: 1000px;
+    width: 100%;
   }
+  .page { display: none; }
+  .page.active { display: block; }
   .card {
     background: var(--card);
     border: 1px solid var(--border);
     border-radius: 12px;
     padding: 1.25rem;
+    margin-bottom: 1.25rem;
   }
   .card h2 {
     margin: 0 0 1rem;
@@ -81,7 +109,7 @@
     padding: 0.6rem 0.75rem;
     border-radius: 8px;
   }
-  textarea { min-height: 80px; resize: vertical; }
+  textarea { min-height: 90px; resize: vertical; }
   button {
     background: var(--mint);
     color: #0a0a0a;
@@ -99,7 +127,7 @@
   }
   button.secondary:hover { background: rgba(61, 220, 151, 0.1); }
   .row { display: flex; gap: 0.75rem; flex-wrap: wrap; align-items: flex-end; }
-  .row > * { flex: 1; min-width: 140px; }
+  .row > div { flex: 1; min-width: 160px; }
   .row button { flex: 0 0 auto; }
   .output {
     background: #0d0d0d;
@@ -110,85 +138,160 @@
     white-space: pre-wrap;
     font-family: ui-monospace, monospace;
     font-size: 0.85rem;
-    max-height: 400px;
+    max-height: 420px;
     overflow: auto;
   }
-  .status { font-size: 0.8rem; color: var(--muted); margin-top: 0.5rem; }
+  .status { font-size: 0.8rem; margin-top: 0.5rem; }
   .status.ok { color: var(--mint); }
   .status.err { color: var(--danger); }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 0.75rem;
+    font-size: 0.9rem;
+  }
+  th, td {
+    text-align: left;
+    padding: 0.5rem 0.6rem;
+    border-bottom: 1px solid var(--border);
+  }
+  th { color: var(--muted); font-weight: 500; }
+  .history-item {
+    padding: 0.6rem 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 0.9rem;
+  }
+  .history-item:last-child { border-bottom: none; }
+  .muted { color: var(--muted); font-size: 0.8rem; }
 </style>
 </head>
 <body>
-<header>
+<nav>
   <h1>Iron<span>wise</span></h1>
-  <div class="config">
+  <a href="#ask" class="active" data-page="ask">Ask</a>
+  <a href="#reports" data-page="reports">Reports</a>
+  <a href="#ingest" data-page="ingest">Ingest</a>
+  <a href="#audit" data-page="audit">Audit</a>
+</nav>
+<div class="main">
+  <header>
     <input id="baseUrl" type="text" placeholder="API base" value="http://127.0.0.1:8000">
     <input id="apiKey" type="password" placeholder="API key">
+  </header>
+  <div id="content">
+
+    <!-- ASK -->
+    <div id="ask" class="page active">
+      <div class="card">
+        <h2>Ask</h2>
+        <label for="question">Question in plain English</label>
+        <textarea id="question" placeholder="What was hosting cost in September?"></textarea>
+        <div style="margin-top: 0.75rem;">
+          <button id="askBtn">Ask</button>
+        </div>
+        <div id="askStatus" class="status"></div>
+        <div id="askOut" class="output" style="display:none;"></div>
+      </div>
+      <div class="card">
+        <h2>Recent</h2>
+        <div id="askHistory"></div>
+      </div>
+    </div>
+
+    <!-- REPORTS -->
+    <div id="reports" class="page">
+      <div class="card">
+        <h2>Reports</h2>
+        <div class="row">
+          <div>
+            <label for="period">Period (YYYY-MM)</label>
+            <input id="period" type="text" value="2026-09">
+          </div>
+          <div>
+            <label for="cashAcct">Cash account</label>
+            <input id="cashAcct" type="text" value="1200">
+          </div>
+          <button id="pnlBtn">P&L</button>
+          <button id="varBtn" class="secondary">Variance</button>
+          <button id="reconBtn" class="secondary">Reconcile</button>
+        </div>
+        <div id="reportStatus" class="status"></div>
+        <div id="reportOut"></div>
+      </div>
+    </div>
+
+    <!-- INGEST -->
+    <div id="ingest" class="page">
+      <div class="card">
+        <h2>Ingest</h2>
+        <div class="row">
+          <div>
+            <label for="source">Source</label>
+            <select id="source">
+              <option value="gl">General ledger</option>
+              <option value="bank">Bank statement</option>
+              <option value="budget">Budget</option>
+            </select>
+          </div>
+          <div>
+            <label for="file">File (CSV / XLSX)</label>
+            <input id="file" type="file" accept=".csv,.xlsx,.xls">
+          </div>
+          <button id="ingestBtn">Upload</button>
+        </div>
+        <div id="ingestStatus" class="status"></div>
+        <div id="ingestOut" class="output" style="display:none;"></div>
+      </div>
+      <div class="card">
+        <h2>Recent uploads</h2>
+        <div id="ingestHistory"></div>
+      </div>
+    </div>
+
+    <!-- AUDIT -->
+    <div id="audit" class="page">
+      <div class="card">
+        <h2>Audit chain</h2>
+        <button id="auditBtn" class="secondary">Verify chain</button>
+        <div id="auditStatus" class="status"></div>
+        <div id="auditOut" class="output" style="display:none;"></div>
+      </div>
+      <div class="card">
+        <h2>About</h2>
+        <p class="muted">Every answer is computed from the database, not by the model. The audit log is a SHA-256 hash chain. Verify it any time.</p>
+      </div>
+    </div>
+
   </div>
-</header>
-
-<main>
-  <section class="card">
-    <h2>Ask</h2>
-    <label for="question">Question in plain English</label>
-    <textarea id="question" placeholder="What was hosting cost in September?"></textarea>
-    <div style="margin-top: 0.75rem;">
-      <button id="askBtn">Ask</button>
-    </div>
-    <div id="askStatus" class="status"></div>
-    <div id="askOut" class="output" style="display:none;"></div>
-  </section>
-
-  <section class="card">
-    <h2>Reports</h2>
-    <div class="row">
-      <div>
-        <label for="period">Period (YYYY-MM)</label>
-        <input id="period" type="text" placeholder="2026-09" value="2026-09">
-      </div>
-      <div>
-        <label for="cashAcct">Cash account (for reconcile)</label>
-        <input id="cashAcct" type="text" placeholder="1200" value="1200">
-      </div>
-      <button id="pnlBtn">P&amp;L</button>
-      <button id="varBtn" class="secondary">Variance</button>
-      <button id="reconBtn" class="secondary">Reconcile</button>
-    </div>
-    <div id="reportStatus" class="status"></div>
-    <div id="reportOut" class="output" style="display:none;"></div>
-  </section>
-
-  <section class="card">
-    <h2>Ingest</h2>
-    <div class="row">
-      <div>
-        <label for="source">Source</label>
-        <select id="source">
-          <option value="gl">General ledger</option>
-          <option value="bank">Bank statement</option>
-          <option value="budget">Budget</option>
-        </select>
-      </div>
-      <div>
-        <label for="file">File (CSV / XLSX)</label>
-        <input id="file" type="file" accept=".csv,.xlsx,.xls">
-      </div>
-      <button id="ingestBtn">Upload</button>
-    </div>
-    <div id="ingestStatus" class="status"></div>
-    <div id="ingestOut" class="output" style="display:none;"></div>
-  </section>
-
-  <section class="card">
-    <h2>Audit</h2>
-    <button id="auditBtn" class="secondary">Verify chain</button>
-    <div id="auditStatus" class="status"></div>
-    <div id="auditOut" class="output" style="display:none;"></div>
-  </section>
-</main>
+</div>
 
 <script>
 const $ = id => document.getElementById(id);
+const pages = document.querySelectorAll('.page');
+const navLinks = document.querySelectorAll('nav a');
+
+function showPage(name) {
+  pages.forEach(p => p.classList.remove('active'));
+  navLinks.forEach(a => a.classList.remove('active'));
+  const page = $(name);
+  if (page) page.classList.add('active');
+  const link = document.querySelector(`nav a[data-page="${name}"]`);
+  if (link) link.classList.add('active');
+  location.hash = name;
+}
+
+navLinks.forEach(a => {
+  a.onclick = e => {
+    e.preventDefault();
+    showPage(a.dataset.page);
+  };
+});
+
+window.addEventListener('hashchange', () => {
+  const hash = location.hash.slice(1) || 'ask';
+  showPage(hash);
+});
+if (location.hash) showPage(location.hash.slice(1));
 
 function headers() {
   const key = $("apiKey").value.trim();
@@ -196,20 +299,40 @@ function headers() {
   if (key) h["X-API-Key"] = key;
   return h;
 }
-
 function base() {
   return $("baseUrl").value.trim().replace(/\/$/, "");
 }
-
 function setStatus(el, msg, ok) {
   el.textContent = msg;
   el.className = "status " + (ok ? "ok" : "err");
 }
-
 function showOut(el, data) {
   el.style.display = "block";
   el.textContent = typeof data === "string" ? data : JSON.stringify(data, null, 2);
 }
+
+// Persist history in session
+const askHist = JSON.parse(sessionStorage.getItem("askHist") || "[]");
+const ingestHist = JSON.parse(sessionStorage.getItem("ingestHist") || "[]");
+function renderAskHist() {
+  const el = $("askHistory");
+  if (!askHist.length) { el.innerHTML = '<p class="muted">No questions yet</p>'; return; }
+  el.innerHTML = askHist.slice().reverse().map(h =>
+    `<div class="history-item"><div>${escapeHtml(h.q)}</div><div class="muted">${h.ts}</div></div>`
+  ).join("");
+}
+function renderIngestHist() {
+  const el = $("ingestHistory");
+  if (!ingestHist.length) { el.innerHTML = '<p class="muted">No uploads yet</p>'; return; }
+  el.innerHTML = ingestHist.slice().reverse().map(h =>
+    `<div class="history-item"><div>${escapeHtml(h.name)} · ${h.source}</div><div class="muted">${h.ts} · ${h.ok ? "ok" : "failed"}</div></div>`
+  ).join("");
+}
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, c => ({'&':'&','<':'<','>':'>','"':'"',"'"::'&#39;'}[c]));
+}
+renderAskHist();
+renderIngestHist();
 
 async function call(path, opts = {}) {
   const url = base() + path;
@@ -217,7 +340,7 @@ async function call(path, opts = {}) {
   const text = await res.text();
   let data;
   try { data = JSON.parse(text); } catch { data = text; }
-  if (!res.ok) throw new Error(data.error || data || res.statusText);
+  if (!res.ok) throw new Error((data && data.error) || data || res.statusText);
   return data;
 }
 
@@ -233,10 +356,29 @@ $("askBtn").onclick = async () => {
     });
     setStatus($("askStatus"), "Done", true);
     showOut($("askOut"), data);
+    askHist.push({ q, ts: new Date().toLocaleString(), data });
+    sessionStorage.setItem("askHist", JSON.stringify(askHist.slice(-20)));
+    renderAskHist();
   } catch (e) {
     setStatus($("askStatus"), e.message, false);
   }
 };
+
+function renderReport(data, kind) {
+  const out = $("reportOut");
+  if (kind === "pnl" && data && typeof data === "object") {
+    const rows = Object.entries(data).map(([k,v]) => `<tr><td>${k}</td><td>${typeof v === "object" ? JSON.stringify(v) : v}</td></tr>`).join("");
+    out.innerHTML = `<table><tbody>${rows}</tbody></table>`;
+  } else if (Array.isArray(data)) {
+    if (!data.length) { out.innerHTML = '<p class="muted">No data</p>'; return; }
+    const keys = Object.keys(data[0]);
+    const head = keys.map(k => `<th>${k}</th>`).join("");
+    const body = data.map(row => `<tr>${keys.map(k => `<td>${row[k] ?? ""}</td>`).join("")}</tr>`).join("");
+    out.innerHTML = `<table><thead><tr>${head}</tr></thead><tbody>${body}</tbody></table>`;
+  } else {
+    out.innerHTML = `<div class="output">${JSON.stringify(data, null, 2)}</div>`;
+  }
+}
 
 async function report(kind) {
   const period = $("period").value.trim();
@@ -251,12 +393,12 @@ async function report(kind) {
     }
     const data = await call(path, { headers: headers() });
     setStatus($("reportStatus"), "Done", true);
-    showOut($("reportOut"), data);
+    renderReport(data, kind);
   } catch (e) {
     setStatus($("reportStatus"), e.message, false);
+    $("reportOut").innerHTML = "";
   }
 }
-
 $("pnlBtn").onclick = () => report("pnl");
 $("varBtn").onclick = () => report("variance");
 $("reconBtn").onclick = () => report("reconcile");
@@ -277,11 +419,17 @@ $("ingestBtn").onclick = async () => {
     const text = await res.text();
     let data;
     try { data = JSON.parse(text); } catch { data = text; }
-    if (!res.ok) throw new Error(data.error || data || res.statusText);
+    if (!res.ok) throw new Error((data && data.error) || data || res.statusText);
     setStatus($("ingestStatus"), "Ingested", true);
     showOut($("ingestOut"), data);
+    ingestHist.push({ name: file.name, source, ts: new Date().toLocaleString(), ok: true });
+    sessionStorage.setItem("ingestHist", JSON.stringify(ingestHist.slice(-20)));
+    renderIngestHist();
   } catch (e) {
     setStatus($("ingestStatus"), e.message, false);
+    ingestHist.push({ name: file.name, source, ts: new Date().toLocaleString(), ok: false });
+    sessionStorage.setItem("ingestHist", JSON.stringify(ingestHist.slice(-20)));
+    renderIngestHist();
   }
 };
 
@@ -289,7 +437,7 @@ $("auditBtn").onclick = async () => {
   setStatus($("auditStatus"), "Checking…", true);
   try {
     const data = await call("/v1/audit/verify", { headers: headers() });
-    setStatus($("auditStatus"), data.chain_valid ? "Chain valid" : "Chain broken", data.chain_valid);
+    setStatus($("auditStatus"), data.chain_valid ? "Chain valid" : "Chain broken", !!data.chain_valid);
     showOut($("auditOut"), data);
   } catch (e) {
     setStatus($("auditStatus"), e.message, false);
