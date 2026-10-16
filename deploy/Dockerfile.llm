@@ -1,0 +1,3 @@
+FROM ghcr.io/ggml-org/llama.cpp:server
+# CPU build. Override with GPU image if needed.
+# Model is mounted at runtime from ../models

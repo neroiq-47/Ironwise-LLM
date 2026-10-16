@@ -1,0 +1,50 @@
+# Two services, one private network. Only the API port is published.
+# Total footprint (model + images) must stay <= 7 GB: `make size-check`.
+services:
+  llm:
+    # llama.cpp OpenAI-compatible server, CPU build (see Dockerfile.llm).
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile.llm
+    image: ironwise-llm:latest
+    command: >
+      -m /models/${IRONWISE_GGUF:-ironwise-8b-q4_k_m.gguf}
+      --host 0.0.0.0 --port 8080
+      --ctx-size 8192 --threads ${LLM_THREADS:-8}
+      --alias ironwise-8b-q4
+    volumes:
+      - ../models:/models:ro
+    networks: [internal]
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://127.0.0.1:8080/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+
+  api:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile.api
+    image: ironwise-api:latest
+    environment:
+      IRONWISE_LLM_BASE_URL: http://llm:8080/v1
+      IRONWISE_API_KEY: ${IRONWISE_API_KEY:?set IRONWISE_API_KEY in .env}
+      IRONWISE_REDACT_PII: "true"
+    ports:
+      - "127.0.0.1:8000:8000"
+    volumes:
+      - ironwise-data:/data
+    depends_on:
+      llm:
+        condition: service_healthy
+    networks: [internal]
+    read_only: true
+    tmpfs: [/tmp]
+    restart: unless-stopped
+
+networks:
+  internal: {}
+
+volumes:
+  ironwise-data: {}
