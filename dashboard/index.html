@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ironwise Dashboard</title>
+<style>
+  :root {
+    --bg: #0a0a0a;
+    --card: #141414;
+    --border: #2a2a2a;
+    --text: #e8e8e8;
+    --muted: #888;
+    --mint: #3ddc97;
+    --mint-dim: #2aa87a;
+    --danger: #ff6b6b;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.5;
+  }
+  header {
+    padding: 1.25rem 2rem;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  header h1 {
+    margin: 0;
+    font-size: 1.4rem;
+    font-weight: 600;
+  }
+  header h1 span { color: var(--mint); }
+  .config {
+    display: flex;
+    gap: 0.75rem;
+    align-items: center;
+    font-size: 0.85rem;
+  }
+  .config input {
+    background: var(--card);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 0.4rem 0.6rem;
+    border-radius: 6px;
+    width: 180px;
+  }
+  main {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 1.5rem;
+    display: grid;
+    gap: 1.25rem;
+  }
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.25rem;
+  }
+  .card h2 {
+    margin: 0 0 1rem;
+    font-size: 1.1rem;
+    color: var(--mint);
+  }
+  label { display: block; margin-bottom: 0.35rem; font-size: 0.85rem; color: var(--muted); }
+  input, textarea, select, button {
+    font-family: inherit;
+    font-size: 0.95rem;
+  }
+  input[type="text"], input[type="password"], textarea, select {
+    width: 100%;
+    background: #0d0d0d;
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 0.6rem 0.75rem;
+    border-radius: 8px;
+  }
+  textarea { min-height: 80px; resize: vertical; }
+  button {
+    background: var(--mint);
+    color: #0a0a0a;
+    border: none;
+    padding: 0.55rem 1.1rem;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  button:hover { background: var(--mint-dim); }
+  button.secondary {
+    background: transparent;
+    color: var(--mint);
+    border: 1px solid var(--mint);
+  }
+  button.secondary:hover { background: rgba(61, 220, 151, 0.1); }
+  .row { display: flex; gap: 0.75rem; flex-wrap: wrap; align-items: flex-end; }
+  .row > * { flex: 1; min-width: 140px; }
+  .row button { flex: 0 0 auto; }
+  .output {
+    background: #0d0d0d;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 1rem;
+    margin-top: 1rem;
+    white-space: pre-wrap;
+    font-family: ui-monospace, monospace;
+    font-size: 0.85rem;
+    max-height: 400px;
+    overflow: auto;
+  }
+  .status { font-size: 0.8rem; color: var(--muted); margin-top: 0.5rem; }
+  .status.ok { color: var(--mint); }
+  .status.err { color: var(--danger); }
+</style>
+</head>
+<body>
+<header>
+  <h1>Iron<span>wise</span></h1>
+  <div class="config">
+    <input id="baseUrl" type="text" placeholder="API base" value="http://127.0.0.1:8000">
+    <input id="apiKey" type="password" placeholder="API key">
+  </div>
+</header>
+
+<main>
+  <section class="card">
+    <h2>Ask</h2>
+    <label for="question">Question in plain English</label>
+    <textarea id="question" placeholder="What was hosting cost in September?"></textarea>
+    <div style="margin-top: 0.75rem;">
+      <button id="askBtn">Ask</button>
+    </div>
+    <div id="askStatus" class="status"></div>
+    <div id="askOut" class="output" style="display:none;"></div>
+  </section>
+
+  <section class="card">
+    <h2>Reports</h2>
+    <div class="row">
+      <div>
+        <label for="period">Period (YYYY-MM)</label>
+        <input id="period" type="text" placeholder="2026-09" value="2026-09">
+      </div>
+      <div>
+        <label for="cashAcct">Cash account (for reconcile)</label>
+        <input id="cashAcct" type="text" placeholder="1200" value="1200">
+      </div>
+      <button id="pnlBtn">P&amp;L</button>
+      <button id="varBtn" class="secondary">Variance</button>
+      <button id="reconBtn" class="secondary">Reconcile</button>
+    </div>
+    <div id="reportStatus" class="status"></div>
+    <div id="reportOut" class="output" style="display:none;"></div>
+  </section>
+
+  <section class="card">
+    <h2>Ingest</h2>
+    <div class="row">
+      <div>
+        <label for="source">Source</label>
+        <select id="source">
+          <option value="gl">General ledger</option>
+          <option value="bank">Bank statement</option>
+          <option value="budget">Budget</option>
+        </select>
+      </div>
+      <div>
+        <label for="file">File (CSV / XLSX)</label>
+        <input id="file" type="file" accept=".csv,.xlsx,.xls">
+      </div>
+      <button id="ingestBtn">Upload</button>
+    </div>
+    <div id="ingestStatus" class="status"></div>
+    <div id="ingestOut" class="output" style="display:none;"></div>
+  </section>
+
+  <section class="card">
+    <h2>Audit</h2>
+    <button id="auditBtn" class="secondary">Verify chain</button>
+    <div id="auditStatus" class="status"></div>
+    <div id="auditOut" class="output" style="display:none;"></div>
+  </section>
+</main>
+
+<script>
+const $ = id => document.getElementById(id);
+
+function headers() {
+  const key = $("apiKey").value.trim();
+  const h = { "Content-Type": "application/json" };
+  if (key) h["X-API-Key"] = key;
+  return h;
+}
+
+function base() {
+  return $("baseUrl").value.trim().replace(/\/$/, "");
+}
+
+function setStatus(el, msg, ok) {
+  el.textContent = msg;
+  el.className = "status " + (ok ? "ok" : "err");
+}
+
+function showOut(el, data) {
+  el.style.display = "block";
+  el.textContent = typeof data === "string" ? data : JSON.stringify(data, null, 2);
+}
+
+async function call(path, opts = {}) {
+  const url = base() + path;
+  const res = await fetch(url, opts);
+  const text = await res.text();
+  let data;
+  try { data = JSON.parse(text); } catch { data = text; }
+  if (!res.ok) throw new Error(data.error || data || res.statusText);
+  return data;
+}
+
+$("askBtn").onclick = async () => {
+  const q = $("question").value.trim();
+  if (!q) return setStatus($("askStatus"), "Enter a question", false);
+  setStatus($("askStatus"), "Asking…", true);
+  try {
+    const data = await call("/v1/ask", {
+      method: "POST",
+      headers: headers(),
+      body: JSON.stringify({ question: q })
+    });
+    setStatus($("askStatus"), "Done", true);
+    showOut($("askOut"), data);
+  } catch (e) {
+    setStatus($("askStatus"), e.message, false);
+  }
+};
+
+async function report(kind) {
+  const period = $("period").value.trim();
+  if (!/^\d{4}-(0[1-9]|1[0-2])$/.test(period)) return setStatus($("reportStatus"), "Period must be YYYY-MM", false);
+  setStatus($("reportStatus"), "Loading…", true);
+  try {
+    let path = `/v1/${kind}?period=${encodeURIComponent(period)}`;
+    if (kind === "reconcile") {
+      const cash = $("cashAcct").value.trim();
+      if (!cash) return setStatus($("reportStatus"), "Cash account required", false);
+      path += `&cash_account=${encodeURIComponent(cash)}`;
+    }
+    const data = await call(path, { headers: headers() });
+    setStatus($("reportStatus"), "Done", true);
+    showOut($("reportOut"), data);
+  } catch (e) {
+    setStatus($("reportStatus"), e.message, false);
+  }
+}
+
+$("pnlBtn").onclick = () => report("pnl");
+$("varBtn").onclick = () => report("variance");
+$("reconBtn").onclick = () => report("reconcile");
+
+$("ingestBtn").onclick = async () => {
+  const file = $("file").files[0];
+  if (!file) return setStatus($("ingestStatus"), "Choose a file", false);
+  const source = $("source").value;
+  setStatus($("ingestStatus"), "Uploading…", true);
+  const fd = new FormData();
+  fd.append("file", file);
+  try {
+    const res = await fetch(base() + `/v1/ingest?source=${source}`, {
+      method: "POST",
+      headers: { "X-API-Key": $("apiKey").value.trim() },
+      body: fd
+    });
+    const text = await res.text();
+    let data;
+    try { data = JSON.parse(text); } catch { data = text; }
+    if (!res.ok) throw new Error(data.error || data || res.statusText);
+    setStatus($("ingestStatus"), "Ingested", true);
+    showOut($("ingestOut"), data);
+  } catch (e) {
+    setStatus($("ingestStatus"), e.message, false);
+  }
+};
+
+$("auditBtn").onclick = async () => {
+  setStatus($("auditStatus"), "Checking…", true);
+  try {
+    const data = await call("/v1/audit/verify", { headers: headers() });
+    setStatus($("auditStatus"), data.chain_valid ? "Chain valid" : "Chain broken", data.chain_valid);
+    showOut($("auditOut"), data);
+  } catch (e) {
+    setStatus($("auditStatus"), e.message, false);
+  }
+};
+</script>
+</body>
+</html>
