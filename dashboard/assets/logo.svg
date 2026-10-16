@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 48" width="240" height="48">
+  <!-- Icon: I mark with mint notch -->
+  <rect x="4" y="8" width="10" height="32" rx="1" fill="#e8e8e8"/>
+  <rect x="14" y="8" width="6" height="8" rx="1" fill="#3ddc97"/>
+  <!-- Wordmark -->
+  <text x="32" y="32" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, Roboto, sans-serif" font-size="22" font-weight="600" fill="#e8e8e8">Iron</text>
+  <text x="88" y="32" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, Roboto, sans-serif" font-size="22" font-weight="600" fill="#3ddc97">wise</text>
+</svg>
