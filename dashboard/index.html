@@ -279,7 +279,7 @@ function showPage(name) {
   if (page) page.classList.add('active');
   const link = document.querySelector(`nav a[data-page="${name}"]`);
   if (link) link.classList.add('active');
-  location.hash = name;
+  if (location.hash.slice(1) !== name) location.hash = name;
 }
 
 navLinks.forEach(a => {
@@ -330,7 +330,14 @@ function renderIngestHist() {
   ).join("");
 }
 function escapeHtml(s) {
-  return String(s).replace(/[&<>"']/g, c => ({'&':'&','<':'<','>':'>','"':'"',"'"::'&#39;'}[c]));
+  const m = {
+    "&": "&",
+    "<": "<",
+    ">": ">",
+    "\"": """,
+    "\'": "&#39;"
+  };
+  return String(s).replace(/[&<>"\']/g, c => m[c] || c);
 }
 renderAskHist();
 renderIngestHist();
@@ -423,6 +430,7 @@ $("ingestBtn").onclick = async () => {
     if (!res.ok) throw new Error((data && data.error) || data || res.statusText);
     setStatus($("ingestStatus"), "Ingested", true);
     showOut($("ingestOut"), data);
+    $("file").value = "";
     ingestHist.push({ name: file.name, source, ts: new Date().toLocaleString(), ok: true });
     sessionStorage.setItem("ingestHist", JSON.stringify(ingestHist.slice(-20)));
     renderIngestHist();
